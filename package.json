@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon --watch build .",
     "run": "node .",
-    "autobuild": "nodemon -e ts -w src -x npm run tsc",
+    "build": "rm -rf build/* && tsc",
+    "autobuild": "nodemon -e ts -w src -x npm run build",
     "tsc": "tsc"
   },
   "repository": {
