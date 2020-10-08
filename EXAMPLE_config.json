@@ -1,0 +1,6 @@
+{
+  "token": "YOUR_TOKEN_HERE",
+  "prefixes": ["!", "?"],
+  "ownerID": "YOUR_USER_ID_HERE",
+  "adminIDs": ["ADMIN_0_ID", "ADMIN_1_ID", "AND_SO_ON"]
+}
