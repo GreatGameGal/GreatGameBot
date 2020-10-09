@@ -1,4 +1,4 @@
-export function run (this: Bot) {
+export async function run (this: Bot) {
   
 }
 
