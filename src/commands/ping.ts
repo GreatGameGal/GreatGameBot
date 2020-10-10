@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 
-export function run (this: Bot, message: Discord.Message, args: Array<string>, perms: Bot.Permissions) {
+export async function run (this: Bot, message: Discord.Message, args: Array<string>, perms: Bot.Permissions) {
   let start = Date.now();
   message.channel.send("Pong!").then((msg) => {
     msg.edit(`Pong! (Roundabout ~${Date.now()-start}ms)`);

@@ -1,7 +1,7 @@
 import Discord from "discord.js";
 
 
-export function run (this: Bot, message: Discord.Message, args: Array<string>, permissions: Bot.Permissions) {
+export async function run (this: Bot, message: Discord.Message, args: Array<string>, permissions: Bot.Permissions) {
 
 }
 
