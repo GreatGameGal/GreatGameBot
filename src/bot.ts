@@ -3,20 +3,25 @@ const DEFAULT_CONFIG = {
 };
 
 import Discord from "discord.js";
+import { MongoClient } from "mongodb";
 import { recursiveFileParse } from "./utils";
 
 export default class Bot {
   config: Record<string, any>;
   client: Discord.Client;
   commands: Map<string, Command>;
-  aliases: Map<string, string>
+  aliases: Map<string, Command>;
   events: Array<Event>;
+  mongo: MongoClient;
 
   constructor(config: Record<string, any>) {
     this.client = new Discord.Client();
     this.config = new Object(null);
     this.commands = new Map();
     this.aliases = new Map();
+    this.mongo = new MongoClient(config.database_uri, {
+      useUnifiedTopology: true,
+    });
     this.events = [];
     if (typeof config.token !== "string") {
       console.trace("ERROR: Config did not contain valid token string.");
@@ -26,6 +31,7 @@ export default class Bot {
 
     this.loadCommands();
     this.loadEvents();
+    this.setupDatabase();
 
     this.client.login(this.config.token);
   }
@@ -39,15 +45,20 @@ export default class Bot {
       let command: Command = file[1] as Command;
       if (!command.disabled && typeof command.run == "function") {
         let splitFilePath = file[0].split("/");
-        let fileName = splitFilePath[splitFilePath.length-1]
+        let fileName = splitFilePath[splitFilePath.length - 1];
         let name = fileName.substr(0, fileName.lastIndexOf("."));
-        if (this.commands.has(name)) console.warn(`Overwriting existing command ${name}.`)
+        if (this.commands.has(name))
+          console.warn(`Overwriting existing command ${name}.`);
         this.commands.set(name, command);
-        if (command.aliases) for(let i=0;i<command.aliases.length;i++) {
-          let alias = command.aliases[i]
-          if (this.aliases.has(alias)) console.warn(`Overwriting existing alias ${alias} for command ${name}`)
-          this.aliases.set(alias, name);
-        }
+        if (command.aliases)
+          for (let i = 0; i < command.aliases.length; i++) {
+            let alias = command.aliases[i];
+            if (this.aliases.has(alias))
+              console.warn(
+                `Overwriting existing alias ${alias} for command ${name}`
+              );
+            this.aliases.set(alias, command);
+          }
       }
     }
 
@@ -58,7 +69,7 @@ export default class Bot {
 
   async loadEvents(): Promise<void> {
     const start = Date.now();
-    for(let i=this.events.length;i>0;i--) {
+    for (let i = this.events.length; i > 0; i--) {
       let event = this.events.pop() as Event;
       this.client.removeListener(event.type, event.run);
     }
@@ -67,12 +78,22 @@ export default class Bot {
       let event: Event = file[1] as Event;
       if (!event.disabled && typeof event.run == "function") {
         event.run = event.run.bind(this);
-        this.client.addListener(event.type, event.run)
+        this.client.addListener(event.type, event.run);
         this.events.push(event);
       }
     }
     console.log(
       `Loaded ${this.events.length} events in ${Date.now() - start}ms.`
+    );
+  }
+
+  async setupDatabase() {
+    this.mongo.connect().then(
+      (client) => {},
+      (rej) => {
+        console.log(`Failed to connect to the database!`);
+        this.mongo.close();
+      }
     );
   }
 
