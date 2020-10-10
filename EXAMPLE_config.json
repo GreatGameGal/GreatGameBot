@@ -2,5 +2,6 @@
   "token": "YOUR_TOKEN_HERE",
   "prefixes": ["!", "?"],
   "ownerID": "YOUR_USER_ID_HERE",
-  "adminIDs": ["ADMIN_0_ID", "ADMIN_1_ID", "AND_SO_ON"]
+  "adminIDs": ["ADMIN_0_ID", "ADMIN_1_ID", "AND_SO_ON"],
+  "database_uri": "mongodb+srv://USER_HERE:PASS_HERE@HOSTNAME:27017/?retryWrites=true&w=majority"
 }
