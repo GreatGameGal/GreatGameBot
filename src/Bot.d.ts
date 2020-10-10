@@ -1,21 +1,30 @@
-interface Command {
-  run: function;
-  aliases: Array<string>;
-  disabled: boolean | void;
+namespace Bot {
+  interface Permissions {
+    local: number | void;
+    bot: number | void;
+  }
+
+  interface Command {
+    run: function;
+    aliases: Array<string>;
+    disabled: boolean | void;
+    perms: Permissions | void;
+  }
+  
+  interface Event {
+    run: function;
+    type: string;
+    disabled: boolean | void;
+  }
 }
 
-interface Event {
-  run: function;
-  type: string;
-  disabled: boolean | void;
-}
 
 class Bot {
   config: Record<string, any>;
   client: Discord.Client;
-  commands: Map<string, Command>;
-  aliases: Map<string, Command>
-  events: Array<Event>;
+  commands: Map<string, Bot.Command>;
+  aliases: Map<string, Bot.Command>
+  events: Array<Bot.Event>;
   mongo: MongoClient;
 
   constructor(config: Record<string, any>);

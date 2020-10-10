@@ -1,15 +1,23 @@
 import Discord from "discord.js";
 import defaultUserData from "../defaultUserData";
+import { getLocalPerms } from "../utils";
 
 export async function run(this: Bot, message: Discord.Message) {
-  let userData =  await this.mongo.db("bot").collection("user").findOne({id: message.author.id});
-  if (userData == null) {
-    userData = {id: message.author.id};
-    Object.assign(userData, defaultUserData);
-    this.mongo.db("bot").collection("user").insertOne(userData);
-  }
-  if (userData.globalPermissions < 0) return;
   if (!message.author.bot) {
+    let userData = await this.mongo
+      .db("bot")
+      .collection("user")
+      .findOne({ id: message.author.id });
+    if (userData == null) {
+      userData = { id: message.author.id };
+      Object.assign(userData, defaultUserData);
+      this.mongo.db("bot").collection("user").insertOne(userData);
+    }
+    if (userData.botPermLevel < 0) return;
+    let userPerms: Bot.Permissions = {
+      bot: userData.botPermLevel,
+      local: getLocalPerms(message),
+    };
     for (let i = 0; i < this.config.prefixes.length; i++) {
       const prefix = this.config.prefixes[i];
       if (message.content.startsWith(prefix)) {
@@ -20,8 +28,13 @@ export async function run(this: Bot, message: Discord.Message) {
           let command = this.commands.has(cmd)
             ? this.commands.get(cmd)
             : this.aliases.get(cmd);
-          if (command != null) {
-            command.run(message, args);
+          if (
+            command != null &&
+            (command.perms == null ||
+              (!(userPerms.local < command.perms.local) &&
+                !(userPerms.bot < command.perms.bot)))
+          ) {
+            command.run(message, args, userPerms);
           }
         }
       }

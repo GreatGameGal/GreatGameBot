@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { Message } from "discord.js";
 
 export function recursiveFileParse(
   pathToParse: string
@@ -25,4 +26,11 @@ export function recursiveFileParse(
     }
   }
   return fileReturn;
+}
+
+
+export function getLocalPerms (message: Message) {
+  let permissionLevel = 0;
+  // Add rules later for server permissions later.
+  return permissionLevel;  
 }

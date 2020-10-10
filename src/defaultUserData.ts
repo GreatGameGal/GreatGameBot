@@ -1,4 +1,4 @@
 export default {
   points: 0,
-  globalPermissions: 0
+  botPermLevel: 0
 }

@@ -9,9 +9,9 @@ import { recursiveFileParse } from "./utils";
 export default class Bot {
   config: Record<string, any>;
   client: Discord.Client;
-  commands: Map<string, Command>;
-  aliases: Map<string, Command>;
-  events: Array<Event>;
+  commands: Map<string, Bot.Command>;
+  aliases: Map<string, Bot.Command>;
+  events: Array<Bot.Event>;
   mongo: MongoClient;
 
   constructor(config: Record<string, any>) {
@@ -42,13 +42,14 @@ export default class Bot {
     if (this.aliases.size) this.aliases.clear();
     const commandFiles = recursiveFileParse("commands");
     for (let file of commandFiles) {
-      let command: Command = file[1] as Command;
+      let command: Bot.Command = file[1] as Bot.Command;
       if (!command.disabled && typeof command.run == "function") {
         let splitFilePath = file[0].split("/");
         let fileName = splitFilePath[splitFilePath.length - 1];
         let name = fileName.substr(0, fileName.lastIndexOf("."));
         if (this.commands.has(name))
           console.warn(`Overwriting existing command ${name}.`);
+        command.run = command.run.bind(this);
         this.commands.set(name, command);
         if (command.aliases)
           for (let i = 0; i < command.aliases.length; i++) {
@@ -70,12 +71,12 @@ export default class Bot {
   async loadEvents(): Promise<void> {
     const start = Date.now();
     for (let i = this.events.length; i > 0; i--) {
-      let event = this.events.pop() as Event;
+      let event = this.events.pop() as Bot.Event;
       this.client.removeListener(event.type, event.run);
     }
     const eventFiles = recursiveFileParse("events");
     for (let file of eventFiles) {
-      let event: Event = file[1] as Event;
+      let event: Bot.Event = file[1] as Bot.Event;
       if (!event.disabled && typeof event.run == "function") {
         event.run = event.run.bind(this);
         this.client.addListener(event.type, event.run);
@@ -89,7 +90,40 @@ export default class Bot {
 
   async setupDatabase() {
     this.mongo.connect().then(
-      (client) => {},
+      async (client) => {
+        const defaultUserData = require("./defaultUserData").default;
+        let users = this.mongo.db("bot").collection("user");
+        let owner = await users.findOne({ id: this.config.ownerID });
+        users.updateOne(
+          {
+            $and: [
+              { id: { $eq: this.config.ownerID } },
+              { botPermLevel: { $ne: 10 } },
+            ],
+          },
+          {
+            $set: Object.assign({}, defaultUserData, owner, {
+              botPermLevel: 10,
+            }),
+          }
+        );
+        if (owner == null)
+          users.insertOne(
+            Object.assign({}, defaultUserData, {
+              id: this.config.ownerID,
+              botPermLevel: 10,
+            })
+          );
+        users.updateMany(
+          {
+            $and: [
+              { id: { $ne: this.config.ownerID } },
+              { botPermLevel: { $gte: 10 } },
+            ],
+          },
+          { $set: { botPermLevel: 0 } }
+        );
+      },
       (rej) => {
         console.log(`Failed to connect to the database!`);
         this.mongo.close();
