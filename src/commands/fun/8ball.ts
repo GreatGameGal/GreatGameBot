@@ -20,8 +20,8 @@ const options = [
   "My reply is no.",
   "My sources say no.",
   "Outlook not so good.",
-  "Very doubtful."
-]
+  "Very doubtful.",
+];
 
 export async function run(
   this: Bot,
@@ -34,12 +34,11 @@ export async function run(
 ) {
   let text = args.join("").toLowerCase();
   let sum = Math.floor(Date.now() / 120000);
-  for(let i=0;i<text.length;i++) {
+  for (let i = 0; i < text.length; i++) {
     sum += text.charCodeAt(i);
   }
-  message.channel.send(options[sum % options.length]);
-
-
+  if (text.includes("love") && text.includes("python")) message.channel.send("It is certain.");
+  else message.channel.send(options[sum % options.length]);
 }
 
 export const disabled: boolean = false;
