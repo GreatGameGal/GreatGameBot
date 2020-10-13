@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import defaultUserData from "../defaultUserData";
+import * as defaultVals from "../../defaultDataVals/index";
 
 async function banUser(this: Bot, id: string, permissions: Bot.Permissions) {}
 
@@ -27,7 +27,7 @@ export async function run(
         return await userDB.findOne({ id }).then((userData: any) => {
           if (!userData) {
             userDB.insertOne(
-              Object.assign({}, defaultUserData, { id, botPermLevel: -1 })
+              Object.assign({}, defaultVals.userData, { id, botPermLevel: -1 })
             );
             console.log(`LOG: Banned user ${id}`);
             return `You have bot-banned user '${id}'`;

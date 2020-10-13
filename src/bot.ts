@@ -5,6 +5,7 @@ const DEFAULT_CONFIG = {
 import Discord from "discord.js";
 import { MongoClient } from "mongodb";
 import { recursiveFileParse } from "./utils";
+import * as defaultVals from "./defaultDataVals/index"
 
 export default class Bot {
   config: Record<string, any>;
@@ -91,7 +92,6 @@ export default class Bot {
   async setupDatabase() {
     this.mongo.connect().then(
       async (client) => {
-        const defaultUserData = require("./defaultUserData").default;
         let users = this.mongo.db("bot").collection("user");
         let owner = await users.findOne({ id: this.config.ownerID });
         users.updateOne(
@@ -102,14 +102,14 @@ export default class Bot {
             ],
           },
           {
-            $set: Object.assign({}, defaultUserData, owner, {
+            $set: {
               botPermLevel: 10,
-            }),
+            },
           }
         );
         if (owner == null)
           users.insertOne(
-            Object.assign({}, defaultUserData, {
+            Object.assign(new Object(null), defaultVals.userData, {
               id: this.config.ownerID,
               botPermLevel: 10,
             })

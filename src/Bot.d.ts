@@ -16,6 +16,27 @@ namespace Bot {
     type: string;
     disabled: boolean | void;
   }
+
+  interface GuildData {
+    _id: any;
+    prefixes: Array<string> | undefined;
+  }
+
+  interface MemberData {
+    _id: any;
+    userid: string;
+    guildid: string;
+    points: number;
+    lastRelevantMessageTimestamp: number;
+    lastMessageTimestamp: number;
+    messagesSeen: number;
+  }
+
+  interface UserData {
+    _id: any;
+    id: string;
+    botPermLevel: number;
+  }
 }
 
 

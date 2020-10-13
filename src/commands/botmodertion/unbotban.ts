@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import defaultUserData from "../defaultUserData";
+import * as defaultVals from "../../defaultDataVals/index.js";
 
 
 export async function run (this: Bot, message: Discord.Message, args: Array<string>, permissions: Bot.Permissions) {
@@ -18,8 +18,8 @@ export async function run (this: Bot, message: Discord.Message, args: Array<stri
       let toPush = await await this.client.users.fetch(id).then(
         async () => {
           let userDB = this.mongo.db("bot").collection("user");
-          return await userDB.findOne({ id }).then((userData: any) => {
-            if (!userData || userData.botPermLevel != -1)
+          return await userDB.findOne({ id }).then((userData: Bot.UserData) => {
+            if (userData == null || userData.botPermLevel != -1)
               return `You can not unban user '${id}' as they have not been banned.`;
   
             userDB.updateOne({ id }, { $set: { botPermLevel: 0 } });
